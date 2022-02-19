@@ -2,21 +2,73 @@
 #include <iostream>
 #include <cmath>
 
-const int NUM_TYPES = 2;
-int TAG = 0;
-bool SET_TYPE [NUM_TYPES] = {false};
-Particle* TYPE_PARAMS [NUM_TYPES];
 
 struct VEC3D {
     double x,y,z;
 };
 
-class Potential{
-    public:
-        Potential(int type1, int type2){
+struct TYPE_PAIR {
+    int type1;
+    int type2;
+};
 
+const int NUM_TYPES = 2;
+int TAG = 0;
+bool SET_TYPE [NUM_TYPES] = {false};
+Particle* TYPE_PARAMS [NUM_TYPES];
+double (*POTENTIALS[NUM_TYPES][NUM_TYPES])(int, int);
+ 
+
+class ForceField{
+    protected:
+        struct TYPE_PAIR type_pair;
+    public:
+        ForceField(int t1, int t2){
+            type_pair.type1 = t1;
+            type_pair.type2 = t2;
         }
 };
+
+class HardHarmonic: public ForceField{
+    protected:
+        double k_spring;
+    public:
+
+        HardHarmonic(int t1, int t2, double k):ForceField(t1,t2){
+            k_spring = k;
+        }
+
+        struct VEC3D calculate_force(Particle p1, Particle p2){
+            struct VEC3D force;
+            force.x = 1.0 * k_spring;
+            force.y = 1.0;
+            force.z = 0.0;
+            std::cout<< p1.get_type() <<std::endl;
+            std::cout<< p2.get_type() <<std::endl;
+            return force;
+        }
+};
+
+
+class Integrator{
+
+    private:
+
+        /* ForceFields matrix stores pointers to
+        potential functions that operate between specific
+        particle types*/
+
+        ForceField* FORCE_FIELDS[NUM_TYPES][NUM_TYPES];
+
+    public:
+        Integrator(){
+        }
+        void set_ForceFields() {}
+
+};
+
+
+
 
 class Particle {
 
@@ -30,11 +82,11 @@ class Particle {
 
     public:
 
-        Particle(int type, double x, double y, double z){
+        Particle(int t, double x, double y, double z){
             std::cout << "Setting positions" <<std::endl;
             tag = TAG;
             TAG ++;
-            type = type;
+            type = t;
             set_position(x,y,z);
 
         }
@@ -66,6 +118,9 @@ class Particle {
 
 
 
+
+
+
 class Disc: public Particle {
 
     private:
@@ -89,15 +144,12 @@ class Disc: public Particle {
 };
 
 
-class Integrator{
-    private:
-        Potential* PotentialMatrix[NUM_TYPES][NUM_TYPES];
-    public:
-        Integrator(){
 
-        }
 
-};
+
+
+
+
 
 int main(){
 
